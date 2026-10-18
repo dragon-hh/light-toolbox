@@ -1,0 +1,13 @@
+{
+  "pages": ["pages/home/index", "pages/tool/index", "pages/wheel/index", "pages/member/index", "pages/records/index", "pages/privacy/index", "pages/test-identity/index"],
+  "window": { "navigationBarBackgroundColor": "#F7F7F2", "navigationBarTextStyle": "black", "navigationBarTitleText": "LIGHT 的工具箱", "backgroundColor": "#F7F7F2" },
+  "tabBar": {
+    "custom": true, "color": "#767A71", "selectedColor": "#20221F", "backgroundColor": "#F7F7F2",
+    "list": [{ "pagePath": "pages/home/index", "text": "工具箱" }, { "pagePath": "pages/records/index", "text": "使用记录" }, { "pagePath": "pages/member/index", "text": "我的" }]
+  },
+  "style": "v2",
+  "usingComponents": { "error-notice": "/components/error-notice/index" },
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json",
+  "__usePrivacyCheck__": true
+}

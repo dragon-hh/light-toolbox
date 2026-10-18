@@ -1,0 +1,17 @@
+{
+  "light_orders": [
+    {"name":"user_created","keys":{"user_id":1,"created_at":-1}},
+    {"name":"user_id_cursor","keys":{"user_id":1,"_id":1}},
+    {"name":"reconcile_created","keys":{"status":1,"last_checked":1,"created_at":1}},
+    {"name":"reconcile_delivered","keys":{"status":1,"delivered":1,"last_checked":1}},
+    {"name":"wechat_order","keys":{"wx_id":1}},
+    {"name":"channel_order","keys":{"channel_id":1}}
+  ],
+  "light_jobs": [
+    {"name":"user_created","keys":{"user_id":1,"created_at":-1}},
+    {"name":"user_active","keys":{"user_id":1,"status":1}},
+    {"name":"interrupted","keys":{"status":1,"created_at":1}},
+    {"name":"result_expiry","keys":{"status":1,"finished_at":1}}
+  ],
+  "light_uploads": [{"name":"upload_expiry","keys":{"expires_at":1}}]
+}

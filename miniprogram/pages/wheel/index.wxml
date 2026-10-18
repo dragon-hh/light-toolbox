@@ -1,0 +1,46 @@
+<view class="wheel-page {{stage === 'edit' ? 'editing' : ''}}">
+
+
+
+  <error-notice message="{{serviceError}}" info="{{serviceInfo}}" retry-text="重新检查服务" bindretry="refreshAvailability"/>
+  <error-notice id="wheel-error" message="{{error}}" info="{{errorInfo}}"/>
+  <block wx:if="{{stage === 'edit'}}">
+    <view class="editor-title"><text class="field-label">转盘名称</text><input value="{{title}}" bindinput="changeTitle" maxlength="24" disabled="{{busy}}" placeholder="填写转盘名称"/></view>
+    <view class="editor-heading"><view><text class="field-label">转盘选项</text><text class="option-count">{{entries.length}} / 8</text></view></view>
+    <view class="entry" wx:for="{{entries}}" wx:key="id">
+      <view class="entry-main">
+        <button class="image-picker" bindtap="chooseImage" data-index="{{index}}" disabled="{{busy}}" aria-label="更换第 {{index + 1}} 项图片"><image wx:if="{{item.image}}" src="{{item.image}}" mode="aspectFill"/><view wx:else class="image-empty"><image src="/assets/upload.png"/><text>添加图片</text></view><text class="image-edit" wx:if="{{item.image}}">换图</text></button>
+        <view class="entry-text"><textarea value="{{item.label}}" maxlength="40" bindinput="changeLabel" data-index="{{index}}" disabled="{{busy}}" placeholder="填写文字描述" auto-height="{{true}}"/></view>
+      </view>
+      <view class="entry-footer"><view class="probability"><text class="color-dot" style="background:{{item.color}}"></text><text>{{item.chance}}</text><view wx:if="{{weighted}}" class="weight-field"><text>权重</text><input type="number" maxlength="3" value="{{item.weight}}" bindinput="changeWeight" data-index="{{index}}" disabled="{{busy}}"/></view></view><view class="entry-actions"><button bindtap="moveEntry" data-index="{{index}}" data-direction="{{-1}}" disabled="{{index === 0 || busy}}" aria-label="上移选项">↑</button><button bindtap="moveEntry" data-index="{{index}}" data-direction="{{1}}" disabled="{{index === entries.length - 1 || busy}}" aria-label="下移选项">↓</button><button class="remove" bindtap="removeEntry" data-index="{{index}}" disabled="{{entries.length <= 2 || busy}}">移除</button></view></view>
+    </view>
+    <button class="add-entry" bindtap="addEntry" disabled="{{entries.length >= 8 || busy}}">＋ 添加一个选项</button>
+    <view class="weight-settings"><view class="row"><view><view class="field-label">自定义中奖权重</view><view class="hint">{{weighted ? '权重越大，抽中机会越大' : '当前为等概率'}}</view></view><switch checked="{{weighted}}" bindchange="changeWeighted" color="#183F35" disabled="{{busy}}"/></view><view class="weight-explanation" wx:if="{{weighted}}">权重 1–100，概率 = 该项权重 ÷ 总权重。</view></view>
+    <view class="local-note"><image src="/assets/shield-check.png"/><text>配置与图片仅保存在本机。<text wx:if="{{!canCancelEdit}}">当前为示例，请按需修改。</text></text></view>
+    <view class="editor-actions"><button wx:if="{{canCancelEdit}}" class="cancel-edit" bindtap="cancelEdit" disabled="{{busy}}">取消编辑</button><button class="save-wheel" bindtap="saveDraft" loading="{{busy}}" disabled="{{busy || fatal}}">保存并进入转盘 <text>↗</text></button></view>
+  </block>
+  <block wx:else>
+    <view class="wheel-caption"><text class="wheel-title">{{title}}</text><button class="edit-wheel" bindtap="edit" disabled="{{busy || pending}}">编辑转盘 ↗</button></view>
+    <view class="wheel-stage {{busy && duration ? 'spinning' : ''}}">
+      <view class="orbit orbit-one"></view><view class="orbit orbit-two"></view>
+      <view class="machine"><view class="bulb" wx:for="{{lights}}" wx:key="id" style="transform:rotate({{item.angle}}deg)"><view class="bulb-dot"></view></view>
+        <view class="rotor" style="transform:rotate({{rotation}}deg);transition-duration:{{duration}}ms"><image wx:if="{{wheelImage}}" src="{{wheelImage}}" mode="aspectFit"/></view>
+        <view class="pointer"></view><button class="hub" bindtap="spin" disabled="{{busy || !ready || !available || fatal || !agreed}}"><text class="hub-small">LIGHT</text><text class="hub-big">{{busy ? 'LUCK' : 'GO'}}</text><text class="hub-small">{{busy ? '好运途中' : '转一下'}}</text></button>
+      </view><view class="wheel-base"></view>
+    </view>
+    <view class="spin-status" wx:if="{{busy || pending}}">{{busy ? (duration ? '让好运，慢慢停在这一格…' : '正在准备本次抽奖…') : pending ? '上次请求尚未确认，请继续查询，避免重新抽取' : !agreed ? '先勾选下方处理说明，再开始转动' : '每次抽取一个选项 · 下一轮仍可再次抽中'}}</view>
+    <button wx:if="{{!ready && !busy}}" class="save-wheel" bindtap="prepare">重新加载转盘</button>
+    <view wx:if="{{result}}" class="prize-result">
+      <view class="confetti"><view wx:for="{{confetti}}" wx:key="id" style="left:{{item.left}}%;background:{{item.color}};animation-delay:{{item.delay}}s"></view></view>
+      <view class="result-kicker">本次结果</view><view class="prize-body"><image class="prize-image" src="{{result.image}}" mode="aspectFill"/><view class="prize-copy"><text class="prize-label">{{result.winner.label}}</text></view></view>
+    </view>
+    <error-notice message="{{consentError}}" info="{{consentInfo}}" retry-text="重新读取" bindretry="syncConsent"/>
+    <view class="draw-consent" wx:if="{{!agreed}}"><checkbox-group bindchange="agree"><label><checkbox value="yes" checked="{{agreed}}" color="#F6C94C" disabled="{{busy}}"/>我已阅读并同意</label></checkbox-group><button bindtap="openPrivacy">文件处理说明</button></view>
+    <view class="consent-scope" wx:if="{{!agreed}}">四款工具通用，仅首次确认。照片 / PDF 上传处理；证件照使用腾讯云人像分割；转盘仅上传文字配置。</view>
+    <button class="spin-button" bindtap="spin" disabled="{{busy || !ready || !available || fatal || !agreed}}" loading="{{busy && !duration}}">{{busy ? '好运正在转动…' : !agreed ? '请先勾选上方处理说明' : pending ? '继续查询这次抽奖' : result ? '再转一次' : '开始转动'}}<text wx:if="{{!busy}}"> ↻</text></button>
+    <view class="price-note" wx:if="{{local || (profile && !profile.isMember)}}">{{local ? '测试体验 · 暂不收费' : '剩余 ' + profile.credits + ' 次 · 成功抽取消耗 1 次，失败不扣'}}</view><view class="price-note" wx:if="{{result}}">结果保留 1 小时，可在使用记录查看。</view>
+    <view class="legend"><view class="legend-header" wx:if="{{weighted}}"><text>选项与概率</text><text>自定义权重</text></view><button wx:else class="legend-toggle" bindtap="toggleLegend" aria-expanded="{{legendOpen}}">{{legendOpen ? '收起选项与概率' : '查看选项与概率'}}<text>等概率 {{legendOpen ? '−' : '+'}}</text></button><block wx:if="{{weighted || legendOpen}}"><view class="legend-row" wx:for="{{entries}}" wx:key="id"><image src="{{item.image}}" mode="aspectFill"/><text class="legend-label">{{item.label}}</text><text class="legend-chance">{{item.chance}}</text></view></block><view class="legend-note" wx:if="{{weighted}}">扇区大小不代表概率，以标注数值为准。</view><view class="legend-note" wx:if="{{weighted || legendOpen}}">每轮抽取 1 项，后续轮次可重复抽中。</view></view>
+    <view class="footnote">用于日常选择与活动辅助，不提供奖品或兑奖服务。</view>
+  </block>
+  <canvas type="2d" id="wheel-canvas" class="render-canvas"></canvas>
+</view>

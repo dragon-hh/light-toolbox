@@ -1,0 +1,12 @@
+<view class="page home">
+  <view class="hero"><view class="hero-title"><view>让小事，</view><view>轻一点<text class="period">.</text></view></view><view class="hero-stamp"><image src="/assets/sparkles.png"/></view></view>
+  <view class="tool-grid">
+    <button wx:for="{{tools}}" wx:key="id" class="tool-card {{item.tone}}" data-id="{{item.id}}" bindtap="openTool">
+      <image class="arrow" src="/assets/arrow-up-right.png"/>
+      <view class="art"><image src="/assets/{{item.icon}}.png"/></view><view class="tool-name">{{item.name}}</view><view class="tool-detail">{{item.detail}}</view>
+    </button>
+  </view>
+  <button class="member-banner" wx:if="{{profile && !profile.isMember && prices && !local}}" bindtap="openMember"><view><view class="member-kicker">30 天月卡</view><view class="member-desc">四款工具不限次使用</view></view><view class="member-price"><text>¥</text>{{prices.month.label}}<image src="/assets/arrow-right.png"/></view></button>
+  <error-notice message="{{error}}" info="{{errorInfo}}" retry-text="重新加载" bindretry="loadPrices"/>
+  <view class="notice" wx:if="{{local}}">测试体验版 · 支付尚未开放</view>
+</view>

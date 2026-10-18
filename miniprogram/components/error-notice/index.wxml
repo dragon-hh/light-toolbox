@@ -1,0 +1,9 @@
+<view class="error-notice" wx:if="{{message}}">
+  <view>{{message}}</view>
+  <view class="actions">
+    <button wx:if="{{info.requiresPayment}}" bindtap="purchase">查看套餐</button>
+    <button wx:elif="{{retryText}}" bindtap="retry" disabled="{{disabled}}">{{retryText}}</button>
+    <button wx:if="{{info.diagnostic}}" class="details-toggle" bindtap="toggleDetails" aria-expanded="{{expanded}}">{{expanded ? '收起详情' : '排查详情'}}</button>
+  </view>
+  <text class="diagnostic" wx:if="{{expanded}}" selectable>{{info.diagnostic}}</text>
+</view>

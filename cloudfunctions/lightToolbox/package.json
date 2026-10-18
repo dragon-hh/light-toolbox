@@ -1,0 +1,25 @@
+{
+  "name": "light-toolbox-cloud",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "dependencies": {
+    "wx-server-sdk": "4.0.2",
+    "@cloudbase/node-sdk": "3.18.7",
+    "sharp": "^0.35.5",
+    "pdf-lib": "^1.17.1",
+    "fast-xml-parser": "^5.3.0",
+    "tencentcloud-sdk-nodejs-bda": "^4.1.138"
+  },
+  "overrides": {
+    "tencentcloud-sdk-nodejs-common": {
+      "uuid": "11.1.1"
+    },
+    "@cloudbase/node-sdk": "$@cloudbase/node-sdk",
+    "@cloudbase/database": "1.5.1",
+    "axios": "0.34.0"
+  }
+}

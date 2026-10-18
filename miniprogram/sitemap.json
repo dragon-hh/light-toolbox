@@ -1,0 +1,1 @@
+{"desc":"只允许工具箱首页被索引；个人记录与支付页面不参与索引","rules":[{"action":"allow","page":"pages/home/index"},{"action":"disallow","page":"*"}]}

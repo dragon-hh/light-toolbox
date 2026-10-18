@@ -1,0 +1,14 @@
+{
+  "envId": "cloud1-6gjewz7jf1fbf260",
+  "functionRoot": "./cloudfunctions",
+  "functions": [{
+    "name": "lightToolbox",
+    "type": "Event",
+    "runtime": "Nodejs20.19",
+    "handler": "index.main",
+    "timeout": 120,
+    "memorySize": 1024,
+    "installDependency": true,
+    "ignore": ["node_modules", ".env"]
+  }]
+}

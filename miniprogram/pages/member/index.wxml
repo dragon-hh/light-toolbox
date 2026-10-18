@@ -1,0 +1,43 @@
+<view class="page member-page">
+
+  <error-notice message="{{error}}" info="{{errorInfo}}" retry-text="重新加载" bindretry="load"/>
+  <view class="muted space-top" wx:if="{{loading}}">正在更新权益与价格…</view>
+
+  <block wx:if="{{profile.isMember}}">
+    <view class="membership-card">
+      <view class="row"><text class="membership-label">LIGHT 月卡</text><text class="membership-status">生效中</text></view>
+      <view class="membership-title">四款工具，不限次使用</view>
+
+      <view class="membership-expiry">有效期至 {{memberDate}}</view>
+      <view class="membership-note">到期不自动扣款。</view>
+    </view>
+    <button class="primary use-tools" bindtap="useTools" disabled="{{busy}}">{{returnTarget ? '继续使用' + returnTarget.name : '去使用工具'}}<image src="/assets/arrow-right.png"/></button>
+    <view class="resume-note muted" wx:if="{{returnTarget}}">已保留本次选中的内容</view>
+    <view class="saved-credits row" wx:if="{{profile.credits > 0}}"><view><view class="credits-title">单次使用权</view><view class="muted">月卡期间不消耗，留待到期后使用</view></view><view class="credit"><text class="mono">{{profile.credits}}</text> 次</view></view>
+    <button class="account-entry renewal-entry" bindtap="toggleRenewal" disabled="{{busy || loading}}" aria-expanded="{{checkoutOpen}}"><view><view class="section-title">续期月卡</view></view><text class="entry-arrow">{{checkoutOpen ? '−' : '›'}}</text></button>
+  </block>
+  <block wx:elif="{{profile}}">
+    <view class="profile panel row"><view><view class="section-title">剩余使用次数</view><view class="muted">{{local ? '测试体验 · 暂不收费' : '次数长期有效，四款工具通用'}}</view></view><view class="credit"><text class="mono">{{profile.credits}}</text> 次可用</view></view>
+    <view class="notice" wx:if="{{returnTarget}}">已为你保留本次选中的内容。<button class="secondary space-top" bindtap="resumeTool">返回{{returnTarget.name}}，继续操作</button></view>
+  </block>
+
+  <view id="purchase" class="purchase {{profile.isMember ? 'renewal-purchase' : ''}}" wx:if="{{profile && (!profile.isMember || checkoutOpen)}}">
+    <view class="row purchase-heading" wx:if="{{profile.isMember}}"><view class="section-title">续期 30 天</view><button class="link" bindtap="toggleRenewal" disabled="{{busy}}">收起</button></view>
+    <view class="plans" wx:if="{{prices}}">
+      <button wx:if="{{!profile.isMember}}" class="plan {{sku === 'single' ? 'chosen' : ''}}" data-sku="single" bindtap="select"><view class="row"><text class="section-title">单次使用权</text><view class="radio"></view></view><view class="price"><text>¥</text>{{prices.single.label}}<text> / 次</text></view><view class="muted">四款工具任选 · 成功处理计次</view></button>
+      <view wx:if="{{profile.isMember}}" class="renewal-quote"><view class="price"><text>¥</text>{{prices.month.label}}<text> / 30天</text></view><view class="muted">续期后有效期至 {{renewalDate}}</view></view>
+      <button wx:else class="plan monthly {{sku === 'month' ? 'chosen' : ''}}" data-sku="month" bindtap="select"><view class="row"><text class="section-title">30 天月卡</text><view class="radio"></view></view><view class="price"><text>¥</text>{{prices.month.label}}<text> / 30天</text></view><view class="muted">四款工具不限次使用</view></button>
+    </view>
+
+    <view class="terms"><view wx:if="{{sku === 'month'}}">{{profile.isMember ? '从当前到期时间顺延 30 天。' : '付款后生效 30 天。'}}四款工具不限次使用，不消耗单次次数，到期不自动扣款。</view><view wx:else>次数长期有效，四款工具通用。成功处理一张图片、一组 PDF 或转动一轮转盘消耗 1 次，失败不扣。</view><view class="space-top">退款后撤回对应权益。iOS 在 App Store 购买记录申请退款，其他终端凭订单号联系客服。转盘使用权不含奖品。</view><checkbox-group bindchange="agree"><label><checkbox value="yes" color="#566C34" checked="{{agreed}}"/>我已确认上述购买说明</label></checkbox-group></view>
+    <button class="primary purchase-button" bindtap="buy" loading="{{busy}}" disabled="{{busy || loading || local || !profile || !prices || !agreed}}">{{local ? '测试体验 · 支付尚未开放' : !prices ? '请先加载套餐价格' : !agreed ? '请先确认上方购买说明' : sku === 'month' ? '¥' + prices.month.label + (profile.isMember ? ' 续期 30 天' : ' 开通 30 天月卡') : '¥' + prices.single.label + ' 购买 1 次使用权'}}</button>
+  </view>
+
+  <view class="account-menu">
+    <button class="account-entry orders-entry" bindtap="toggleOrders" aria-expanded="{{ordersOpen}}"><view><view class="section-title">我的订单</view></view><text class="entry-arrow">{{ordersOpen ? '−' : '›'}}</text></button>
+    <view class="order-panel" wx:if="{{ordersOpen}}"><view class="muted">最近 50 笔</view><view class="empty" wx:if="{{!orders.length && !loading && !error}}"><view>还没有订单</view></view><view class="order" wx:for="{{orders}}" wx:key="id"><view class="row"><text>{{item.name}}</text><text>¥{{item.priceLabel}}</text></view><view class="muted">{{item.date}} · {{item.stateLabel}}</view><view class="row order-actions"><button class="link" data-id="{{item.id}}" bindtap="toggleOrderDetails" aria-expanded="{{orderDetailId === item.id}}">{{orderDetailId === item.id ? '收起详情' : '订单详情'}}</button><button wx:if="{{item.status === 'created'}}" class="link" data-id="{{item.id}}" bindtap="syncOrder" disabled="{{busy}}">同步状态</button></view><view class="order-details" wx:if="{{orderDetailId === item.id}}"><text selectable>订单号：{{item.id}}</text><button class="link" data-id="{{item.id}}" bindtap="copyOrder">复制订单号</button><view wx:if="{{item.status === 'created'}}">若已扣款，请同步状态核对到账情况。</view></view></view></view>
+    <button class="account-entry" open-type="contact"><text class="section-title">联系客服</text><text class="entry-arrow">›</text></button>
+    <button class="account-entry" bindtap="openPrivacy"><text class="section-title">文件与隐私</text><text class="entry-arrow">›</text></button>
+  </view>
+
+</view>

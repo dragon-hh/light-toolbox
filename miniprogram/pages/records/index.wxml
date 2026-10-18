@@ -1,0 +1,21 @@
+<view class="page">
+
+  <error-notice message="{{error}}" info="{{errorInfo}}" retry-text="重新加载" bindretry="load"/>
+  <view class="panel empty" wx:if="{{!jobs.length && !loading && !error}}"><image class="icon" src="/assets/folder-open.png"/><view class="section-title">暂无使用记录</view><button class="primary space-top" bindtap="goHome">去使用工具</button></view>
+  <view class="notice" wx:if="{{loading}}">正在读取记录…</view>
+  <view class="record panel" wx:for="{{jobs}}" wx:key="id">
+    <view class="row"><view class="record-icon {{item.tone}}"><image src="/assets/{{item.icon}}.png"/></view><view class="record-info"><view class="section-title">{{item.name}}</view><view class="muted">{{item.date}}</view></view><text class="status {{item.status}}">{{item.stateLabel}}</text></view>
+    <view class="record-expiry" wx:if="{{item.status === 'succeeded' && !item.expired}}">{{item.expiryText}}</view>
+    <view class="notice" wx:if="{{item.status === 'failed'}}">{{item.failureText}}<view>未扣使用次数。</view></view>
+    <view class="record-bottom">
+      <button class="link diagnostic" data-id="{{item.id}}" bindtap="toggleDetails" aria-expanded="{{detailId === item.id}}">{{detailId === item.id ? '收起详情' : '详情'}}</button>
+      <view class="record-actions" wx:if="{{item.status === 'succeeded' && !item.expired}}">
+        <button class="link" data-id="{{item.id}}" data-action="preview" bindtap="useResult" disabled="{{!!busyId}}">{{busyId === item.id ? '正在打开…' : item.tool === 'pdf' ? '打开 / 转发 PDF' : item.tool === 'lottery' ? '查看结果' : '预览'}}</button>
+        <button class="save-record" wx:if="{{item.tool === 'photo' || item.tool === 'compress'}}" data-id="{{item.id}}" data-action="save" bindtap="useResult" disabled="{{!!busyId}}">保存图片</button>
+      </view>
+      <button wx:if="{{item.status === 'processing'}}" class="link" bindtap="load" disabled="{{loading}}">刷新状态</button>
+      <button wx:if="{{item.status === 'failed' || (item.status === 'succeeded' && item.expired)}}" class="link" data-tool="{{item.tool}}" bindtap="openTool">再用一次</button>
+    </view>
+    <view class="record-details" wx:if="{{detailId === item.id}}"><text selectable>任务编号：{{item.id}}</text><view wx:if="{{item.error}}">错误代码：{{item.error}}</view><button class="link" data-id="{{item.id}}" bindtap="copyDiagnostic">复制排查信息</button></view>
+  </view>
+</view>

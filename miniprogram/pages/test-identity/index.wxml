@@ -1,0 +1,14 @@
+<view class="page identity-page">
+  <block wx:if="{{ready}}">
+    <view class="title">{{openid ? '账号已识别' : '开通测试权限'}}</view>
+    <view wx:if="{{!openid}}" class="intro">点击下方按钮获取当前微信账号的识别码，供邀请人添加测试权限。</view>
+    <view wx:if="{{openid}}" class="panel identity-card">
+      <view class="muted">你的识别码</view>
+      <text class="identity-code" selectable="{{true}}">{{openid}}</text>
+      <view class="muted">请将此页截图发给邀请人，等待开通后再使用工具。</view>
+    </view>
+    <error-notice wx:if="{{errorInfo}}" message="{{errorInfo.message}}" info="{{errorInfo}}" />
+    <button wx:if="{{!openid}}" class="primary space-top" bindtap="identify" loading="{{loading}}" disabled="{{loading}}">{{loading ? '正在识别' : '获取我的识别码'}}</button>
+  </block>
+  <view wx:else class="empty">此页面仅供测试账号识别使用</view>
+</view>

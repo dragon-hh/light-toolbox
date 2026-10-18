@@ -1,0 +1,4 @@
+.muted{line-height:1.9;font-size:26rpx}
+.consent-status{color:#455A32;font-weight:600;font-size:27rpx}
+
+.privacy-page{padding-top:8rpx}.detail-toggle{display:block;margin:18rpx 0 8rpx}.privacy-contact{display:block;text-align:center;margin-top:28rpx}

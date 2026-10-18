@@ -1,0 +1,40 @@
+<view class="page tool-page">
+
+<view class="usage-bar" wx:if="{{!result && (checking || local || (profile && !profile.isMember))}}"><text>{{checking ? '正在确认可用权益…' : entitlementText}}</text><button class="link" wx:if="{{!checking && profile && !local && !profile.isMember && profile.credits < 1}}" bindtap="openMember" disabled="{{busy || pending}}">购买次数</button></view>
+  <error-notice message="{{capabilityError}}" info="{{capabilityInfo}}" retry-text="重新检查服务" bindretry="refreshAvailability"/>
+
+  <view class="notice" wx:if="{{!available && !capabilityError && !checking}}">这项工具暂时不可用，请稍后重新检查服务。</view>
+
+  <block wx:if="{{!result}}">
+    <button class="drop-zone" bindtap="chooseFiles" disabled="{{busy || pending}}">
+      <image wx:if="{{files.length && tool.id !== 'pdf'}}" class="source-image" src="{{files[0].path}}" mode="aspectFit"/>
+      <block wx:else><view class="upload-icon"><image src="/assets/upload.png"/></view><view class="section-title">{{tool.id === 'pdf' ? '添加 PDF 文件' : '选择一张照片'}}</view><view class="muted">{{tool.id === 'pdf' ? '从微信聊天中选择 · 2–10 个文件' : '拍一张，或从相册中选择'}}</view></block>
+      <text wx:if="{{files.length && tool.id !== 'pdf'}}" class="replace">重新选择 · {{files[0].sizeLabel}}</text>
+    </button>
+    <view class="muted small-note">{{tool.id === 'pdf' ? '单个 ≤10MB，总计 ≤40MB，最多 500 页；不支持加密文件。' : tool.id === 'photo' ? '正面半身照，头部居中并留出空隙。单张 ≤10MB。' : '支持静态 JPG / PNG / WebP，单张 ≤10MB。'}}</view>
+    <view class="file-summary muted" wx:if="{{tool.id === 'pdf' && files.length}}">{{files.length === 1 ? '还需添加 1 份 PDF' : '共 ' + files.length + ' 份 · 按下方顺序合并'}}</view>
+    <view class="file-list" wx:if="{{tool.id === 'pdf'}}">
+      <view class="file-row" wx:for="{{files}}" wx:key="id"><text class="file-index mono">{{index + 1}}</text><view class="file-info"><view class="file-name">{{item.name}}</view><text class="muted">{{item.sizeLabel}}</text></view><button data-index="{{index}}" data-direction="{{-1}}" bindtap="moveFile" disabled="{{index === 0 || busy || pending}}" aria-label="上移文件">↑</button><button data-index="{{index}}" data-direction="{{1}}" bindtap="moveFile" disabled="{{index === files.length - 1 || busy || pending}}" aria-label="下移文件">↓</button><button data-index="{{index}}" bindtap="removeFile" disabled="{{busy || pending}}" aria-label="移除文件">×</button></view>
+    </view>
+    <view class="panel" wx:if="{{tool.id === 'photo'}}">
+      <view class="section-title">照片尺寸</view><view class="options"><button wx:for="{{sizes}}" wx:key="id" disabled="{{busy || pending}}" class="option {{size === item.id ? 'selected' : ''}}" data-value="{{item.id}}" bindtap="chooseSize"><view>{{item.name}}</view><text class="muted dimension">{{item.dimensions}}</text></button></view>
+      <view class="section-title space-top">背景颜色</view><view class="options"><button wx:for="{{backgrounds}}" wx:key="id" disabled="{{busy || pending}}" class="color-option {{background === item.id ? 'selected' : ''}}" data-value="{{item.id}}" bindtap="chooseBackground"><view class="color-dot" style="background:{{item.hex}}"></view>{{item.name}}</button></view>
+      <view class="small-note muted">请核对所需尺寸及机构要求。<button class="link help-toggle" bindtap="togglePhotoHelp" aria-expanded="{{photoHelpOpen}}">{{photoHelpOpen ? '收起' : '制作说明'}}</button></view><view class="notice" wx:if="{{photoHelpOpen}}">仅替换背景、居中裁切，输出 300 DPI，不修改五官；不保证特定机构审核通过。</view>
+    </view>
+    <view class="panel" wx:if="{{tool.id === 'compress'}}"><view class="row"><text class="section-title">压缩质量</text><text class="quality mono">{{quality}}<text>%</text></text></view><slider value="{{quality}}" min="20" max="95" step="5" activeColor="#8C9F47" backgroundColor="#E4E8DA" block-color="#20221F" block-size="22" bindchange="changeQuality" disabled="{{busy || pending}}"/><view class="row muted"><text>体积更小</text><text>画质更好</text></view><view class="small-note muted" wx:if="{{files.length && outputFormat}}">压缩为 {{outputFormat}}</view></view>
+  </block>
+
+  <error-notice wx:if="{{!result}}" id="tool-error" message="{{error}}" info="{{errorInfo}}" retry-text="查看使用记录" bindretry="openRecords"/>
+  <view wx:if="{{!result && !agreed}}" class="processing-consent">
+    <error-notice message="{{consentError}}" info="{{consentInfo}}" retry-text="重新读取" bindretry="syncConsent"/>
+    <view class="consent"><checkbox-group bindchange="agree"><label><checkbox value="yes" checked="{{agreed}}" color="#566C34" disabled="{{busy}}"/>我已阅读并同意</label></checkbox-group><button class="link" bindtap="openPrivacy">文件处理说明</button></view>
+    <view class="consent-scope">四款工具通用，仅首次确认。照片 / PDF 上传处理；证件照使用腾讯云人像分割；转盘仅上传文字配置。</view>
+  </view>
+  <button class="primary tool-submit" wx:if="{{!result}}" bindtap="run" loading="{{busy}}" disabled="{{busy || checking || !available || !agreed || files.length < (tool.id === 'pdf' ? 2 : 1)}}">{{busy ? '正在处理，请稍候' : pending ? '重试本次任务 · 不重复计次' : !agreed ? '请先勾选文件处理说明' : !local && profile && !profile.isMember && profile.credits < 1 ? '购买次数后继续' : tool.id === 'pdf' ? '合并成一份 PDF' : tool.id === 'photo' ? '生成证件照' : '开始压缩'}}</button>
+
+
+  <view id="tool-result" class="panel result" wx:if="{{result}}">
+    <view class="section-title">处理完成</view>
+    <block><image wx:if="{{resultPath}}" class="result-image" bindtap="previewResult" src="{{resultPath}}" mode="aspectFit"/><view class="result-stat" wx:if="{{tool.id === 'compress'}}">{{result.originalSize}} → {{result.outputSize}}<text> · 缩小 {{result.savedPercent}}%</text></view><view class="notice" wx:if="{{result.note && (tool.id !== 'compress' || result.unchanged)}}">{{result.note}}</view><view class="result-stat" wx:if="{{tool.id === 'pdf'}}">{{result.files}} 份文件 → {{result.pages}} 页 PDF</view><view class="muted space-top" wx:if="{{tool.id === 'photo'}}">{{result.width}} × {{result.height}} px · 300 DPI</view><error-notice message="{{error}}" info="{{errorInfo}}" retry-text="重新加载预览" bindretry="loadResultImage" disabled="{{saving}}"/><view class="muted space-top">结果保留 1 小时，请及时保存。</view><button class="primary space-top" bindtap="saveResult" loading="{{saving}}" disabled="{{saving}}">{{tool.id === 'pdf' ? '打开 / 转发 PDF' : '保存到相册'}}</button><button class="secondary space-top" bindtap="startOver" disabled="{{saving}}">{{tool.id === 'pdf' ? '合并另一组 PDF' : '处理另一张图片'}}</button><button class="link result-records" bindtap="openRecords">查看使用记录</button></block>
+  </view>
+</view>

@@ -1,0 +1,4 @@
+.identity-page { padding-top:72rpx; }
+.intro { margin-top:28rpx; color:#727969; }
+.identity-card { margin-top:36rpx; }
+.identity-code { display:block; margin:24rpx 0 32rpx; font-family:'Courier New',monospace; font-size:30rpx; line-height:1.8; word-break:break-all; }
